@@ -7,7 +7,7 @@ import seedDatabase, {
   commentTwo,
   postOne
 } from './utils/seedDatabase';
-import { deleteComment, subscribeToComments } from './utils/operations';
+import { deleteComment, subscribeToComments, getComments } from './utils/operations';
 import prisma from '../src/prisma';
 
 const client = getClient();
@@ -68,4 +68,12 @@ test('should subscribe to comments for a post', async done => {
       id: commentOne.comment.id
     }
   });
+});
+
+test('Should fetch post comments', async () => {
+  const { data } = await client.query({
+    query: getComments
+  });
+
+  expect(data.comments.length).toBe(2);
 });

@@ -30,6 +30,35 @@ test('Should create a new user', async () => {
   expect(userexists).toBe(true);
 });
 
+test('Should not sign up a user with an email that is already in use', async () => {
+  const variables = {
+    data: userOne.input
+  };
+
+  await expect(
+    client.mutate({
+      mutation: createUser,
+      variables
+    })
+  ).rejects.toThrow();
+});
+
+test('Should login and return authentication token', async () => {
+  const variables = {
+    data: {
+      email: userOne.input.email,
+      password: 'Red098!@#$',
+    }
+  }
+
+  const { data } = await client.mutate({
+    mutation: login,
+    variables
+  });
+
+  expect(data.login.token).toBeTruthy();
+});
+
 test('Should expose public author profiles', async () => {
   const { data } = await client.query({
     query: getUsers
