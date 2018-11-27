@@ -42,6 +42,7 @@ const login = gql`
         name
         email
       }
+      token
     }
   }
 `;
@@ -133,6 +134,24 @@ const subscribeToPosts = gql`
   }
 `;
 
+const getComments = gql`
+  query {
+    comments {
+      id
+      text
+    }
+  }
+`;
+
+const createComment = gql`
+  mutation($data: CreateCommentInput!) {
+    createComment(data: $data) {
+      id
+      text
+    }
+  }
+`;
+
 export {
   createUser,
   login,
@@ -145,5 +164,7 @@ export {
   deletePost,
   deleteComment,
   subscribeToComments,
-  subscribeToPosts
+  subscribeToPosts,
+  getComments,
+  createComment
 };
