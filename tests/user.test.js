@@ -1,8 +1,8 @@
 import 'cross-fetch/polyfill';
-import { gql } from 'apollo-boost';
 
 import prisma from '../src/prisma';
-import seedDatabase from './utils/seedDatabase';
+import seedDatabase, { userOne } from './utils/seedDatabase';
+import { createUser, getUsers, login, getProfile } from './utils/operations';
 import getClient from './utils/getClient';
 
 const client = getClient();
@@ -10,116 +10,68 @@ const client = getClient();
 beforeEach(seedDatabase);
 
 test('Should create a new user', async () => {
-  const createUser = gql`
-    mutation {
-      createUser(
-        data: {
-          name: "Fasoro Alexander"
-          email: "meee@me.com"
-          password: "mysecurepassword"
-        }
-      ) {
-        user {
-          id
-          name
-        }
-        token
-      }
+  const variables = {
+    data: {
+      name: 'Fasoro Alexander',
+      email: 'meee@me.com',
+      password: 'mysecurepassword'
     }
-  `;
+  };
 
-  const response = await client.mutate({
-    mutation: createUser
+  const { data } = await client.mutate({
+    mutation: createUser,
+    variables
   });
 
   const userexists = await prisma.exists.User({
-    id: response.data.createUser.user.id
+    id: data.createUser.user.id
   });
 
   expect(userexists).toBe(true);
 });
 
 test('Should expose public author profiles', async () => {
-  const getUsers = gql`
-    query {
-      users {
-        id
-        name
-        email
-      }
-    }
-  `;
-
-  const response = await client.query({
+  const { data } = await client.query({
     query: getUsers
   });
 
-  expect(response.data.users.length).toBe(1);
-  expect(response.data.users[0].email).toBe(null);
-});
-
-test('Should only return published posts', async () => {
-  const getPosts = gql`
-    query {
-      posts {
-        id
-        title
-        body
-        published
-      }
-    }
-  `;
-
-  const response = await client.query({
-    query: getPosts
-  });
-
-  expect(response.data.posts.length).toBe(1);
-  expect(response.data.posts[0].published).toBe(true);
+  expect(data.users.length).toBe(2);
+  expect(data.users[0].email).toBe(null);
 });
 
 test('Should not login with bad credentials', async () => {
-  const login = gql`
-    mutation {
-      login(data: { email: "non@existent.com", password: "badpassword" }) {
-        user {
-          id
-          name
-          email
-        }
-      }
-    }
-  `;
+  const variables = {
+    data: { email: 'non@existent.com', password: 'badpassword' }
+  };
 
   await expect(
     client.mutate({
-      mutation: login
+      mutation: login,
+      variables
     })
   ).rejects.toThrow();
 });
 
 test('Should not sign up with invalid password', async () => {
-	const createUser = gql`
-    mutation {
-      createUser(
-        data: {
-          name: "Josh sanders"
-          email: "josh@me.com"
-          password: "short"
-        }
-      ) {
-        user {
-          id
-          name
-        }
-        token
-      }
-    }
-	`;
-	
-	await expect(
+  const variables = {
+    data: { name: 'Josh sanders', email: 'josh@me.com', password: 'short' }
+  };
+
+  await expect(
     client.mutate({
-      mutation: createUser
+      mutation: createUser,
+      variables
     })
   ).rejects.toThrow();
+});
+
+test('Should fetch user profile', async () => {
+  const client = getClient(userOne.jwt);
+
+  const { data } = await client.query({
+    query: getProfile
+  });
+
+  expect(data.me.name).toBe(userOne.user.name);
+  expect(data.me.id).toBe(userOne.user.id);
 });
