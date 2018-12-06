@@ -61,7 +61,8 @@ test('Should be able to create a post', async () => {
     data: {
       title: 'Post 3 title',
       body: 'Post 3 body',
-      published: true
+      published: true,
+      commentsEnabled: true
     }
   };
 
