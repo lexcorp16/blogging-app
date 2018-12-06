@@ -26,7 +26,8 @@ export const postOne = {
   input: {
     title: 'Post 1',
     body: 'Body for post 1',
-    published: true
+    published: true,
+    commentsEnabled: true
   },
   post: undefined
 };
@@ -35,7 +36,8 @@ export const postTwo = {
   input: {
     title: 'Post 2',
     body: 'Body for post 2',
-    published: false
+    published: false,
+    commentsEnabled: true
   },
   post: undefined
 };
